@@ -90,6 +90,11 @@ export function Dashboard({
 
       <ResumeInfoCards p={analysis.parsed} />
 
+      <Card icon={Bug} title="Parser Debug Panel" subtitle="Verify the resume was read correctly">
+        <ParserDebugPanel p={analysis.parsed} />
+      </Card>
+
+
       {/* Scores */}
       <div className="grid gap-4 md:grid-cols-2">
         <ScoreCard
