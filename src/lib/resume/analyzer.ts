@@ -1,10 +1,11 @@
-import { extractKeywords, STANDARD_DEV_SKILLS, type ParsedResume } from "./parser";
+import { countProjectItems, extractKeywords, STANDARD_DEV_SKILLS, type ParsedResume } from "./parser";
 
 export type Strength = {
   skills: number;
   projects: number;
   education: number;
   experience: number;
+  achievements: number;
   formatting: number;
 };
 
