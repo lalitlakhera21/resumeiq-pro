@@ -104,17 +104,44 @@ export const JOB_ROLES: JobRole[] = [
 ];
 
 export function analyzeResume(parsed: ParsedResume): Analysis {
-  const skills = clamp(parsed.skills.length * 8, 0, 100);
-  const projects = clamp(parsed.projects.length * 18, 0, 100);
-  const experience = clamp(parsed.experience.length * 16, 0, 100);
-  const education = clamp(parsed.education.length * 30, 0, 100);
+  const det = parsed.sectionsDetected;
+  const projCount = countProjectItems(parsed);
+
+  // Floor rule: if a section was clearly detected, never return 0%.
+  const floor = (detected: boolean, score: number, min = 70) =>
+    detected ? Math.max(min, score) : score;
+
+  const skillsRaw = clamp(parsed.skills.length * 8, 0, 100);
+  const projectsRaw = clamp(projCount * 18, 0, 100);
+  const experienceRaw = clamp(parsed.experience.length * 14, 0, 100);
+  const educationRaw = clamp(parsed.education.length * 28, 0, 100);
+  const achievementsRaw = clamp(
+    (parsed.achievements.length * 18) + (parsed.certifications.length * 18),
+    0, 100,
+  );
+
+  const skills = floor(det.skills, skillsRaw, parsed.skills.length >= 4 ? 75 : 60);
+  const projects = floor(det.projects, projectsRaw, projCount >= 4 ? 85 : projCount >= 2 ? 75 : 70);
+  const experience = floor(det.experience, experienceRaw, 70);
+  const education = floor(det.education, educationRaw, 75);
+  const achievements = floor(
+    det.achievements || det.certifications,
+    achievementsRaw,
+    70,
+  );
   const formatting = scoreFormatting(parsed);
 
-  const strength: Strength = { skills, projects, experience, education, formatting };
+  const strength: Strength = { skills, projects, experience, education, achievements, formatting };
 
   const atsScore = Math.round(
-    skills * 0.25 + projects * 0.2 + experience * 0.25 + education * 0.15 + formatting * 0.15,
+    skills * 0.22 +
+    projects * 0.2 +
+    experience * 0.2 +
+    education * 0.12 +
+    achievements * 0.1 +
+    formatting * 0.16,
   );
+
 
   const lowerSkills = new Set(parsed.skills.map((s) => s.toLowerCase()));
   const missingSkills = STANDARD_DEV_SKILLS.filter((s) => !lowerSkills.has(s.toLowerCase()));
