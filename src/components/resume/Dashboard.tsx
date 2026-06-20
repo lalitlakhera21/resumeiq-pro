@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
   Download, RotateCcw, Sparkles, ListChecks, AlertTriangle, BarChart3,
-  Briefcase, User, LineChart, Map, Layers, Target, Flame, Trophy, Activity,
+  Briefcase, User, LineChart, Map, Layers, Target, Flame, Trophy, Activity, Bug,
 } from "lucide-react";
 import type { Analysis } from "@/lib/resume/analyzer";
 import { downloadReport } from "@/lib/resume/report";
@@ -21,6 +21,7 @@ import { RecruiterView } from "./RecruiterView";
 import { JobMatchCenter } from "./JobMatchCenter";
 import { ImpactMeter } from "./ImpactMeter";
 import { ScoreHistory } from "./ScoreHistory";
+import { ParserDebugPanel } from "./ParserDebugPanel";
 import type { HistoryEntry } from "@/lib/resume/history";
 
 type Mode = "candidate" | "recruiter";
@@ -88,6 +89,11 @@ export function Dashboard({
       </div>
 
       <ResumeInfoCards p={analysis.parsed} />
+
+      <Card icon={Bug} title="Parser Debug Panel" subtitle="Verify the resume was read correctly">
+        <ParserDebugPanel p={analysis.parsed} />
+      </Card>
+
 
       {/* Scores */}
       <div className="grid gap-4 md:grid-cols-2">

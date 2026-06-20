@@ -1,10 +1,11 @@
-import { extractKeywords, STANDARD_DEV_SKILLS, type ParsedResume } from "./parser";
+import { countProjectItems, extractKeywords, STANDARD_DEV_SKILLS, type ParsedResume } from "./parser";
 
 export type Strength = {
   skills: number;
   projects: number;
   education: number;
   experience: number;
+  achievements: number;
   formatting: number;
 };
 
@@ -103,17 +104,44 @@ export const JOB_ROLES: JobRole[] = [
 ];
 
 export function analyzeResume(parsed: ParsedResume): Analysis {
-  const skills = clamp(parsed.skills.length * 8, 0, 100);
-  const projects = clamp(parsed.projects.length * 18, 0, 100);
-  const experience = clamp(parsed.experience.length * 16, 0, 100);
-  const education = clamp(parsed.education.length * 30, 0, 100);
+  const det = parsed.sectionsDetected;
+  const projCount = countProjectItems(parsed);
+
+  // Floor rule: if a section was clearly detected, never return 0%.
+  const floor = (detected: boolean, score: number, min = 70) =>
+    detected ? Math.max(min, score) : score;
+
+  const skillsRaw = clamp(parsed.skills.length * 8, 0, 100);
+  const projectsRaw = clamp(projCount * 18, 0, 100);
+  const experienceRaw = clamp(parsed.experience.length * 14, 0, 100);
+  const educationRaw = clamp(parsed.education.length * 28, 0, 100);
+  const achievementsRaw = clamp(
+    (parsed.achievements.length * 18) + (parsed.certifications.length * 18),
+    0, 100,
+  );
+
+  const skills = floor(det.skills, skillsRaw, parsed.skills.length >= 4 ? 75 : 60);
+  const projects = floor(det.projects, projectsRaw, projCount >= 4 ? 85 : projCount >= 2 ? 75 : 70);
+  const experience = floor(det.experience, experienceRaw, 70);
+  const education = floor(det.education, educationRaw, 75);
+  const achievements = floor(
+    det.achievements || det.certifications,
+    achievementsRaw,
+    70,
+  );
   const formatting = scoreFormatting(parsed);
 
-  const strength: Strength = { skills, projects, experience, education, formatting };
+  const strength: Strength = { skills, projects, experience, education, achievements, formatting };
 
   const atsScore = Math.round(
-    skills * 0.25 + projects * 0.2 + experience * 0.25 + education * 0.15 + formatting * 0.15,
+    skills * 0.22 +
+    projects * 0.2 +
+    experience * 0.2 +
+    education * 0.12 +
+    achievements * 0.1 +
+    formatting * 0.16,
   );
+
 
   const lowerSkills = new Set(parsed.skills.map((s) => s.toLowerCase()));
   const missingSkills = STANDARD_DEV_SKILLS.filter((s) => !lowerSkills.has(s.toLowerCase()));
@@ -138,7 +166,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
   const impactRewrites = buildImpactRewrites(parsed);
   const roadmap = buildRoadmap(parsed, projectQuality, jobMatches);
 
-  const achievements = [
+  const achievementBadges = [
     { id: "ats80", title: "ATS Score 80+", description: "Reached an ATS score above 80.", unlocked: atsScore >= 80 },
     { id: "ats90", title: "ATS Score 90+", description: "Elite ATS optimization.", unlocked: atsScore >= 90 },
     { id: "iv80", title: "Interview Ready", description: "Interview Readiness above 80.", unlocked: interviewScore >= 80 },
@@ -147,6 +175,9 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     { id: "advProj", title: "Advanced Builder", description: "Has at least one advanced project.", unlocked: projectQuality.some((p) => p.complexity === "Advanced") },
   ];
 
+  console.log("[ResumeIQ] Strength:", strength);
+  console.log("[ResumeIQ] ATS:", atsScore, "Interview:", interviewScore);
+
   return {
     parsed,
     atsScore,
@@ -154,7 +185,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     strength,
     missingSkills,
     suggestions,
-    achievements,
+    achievements: achievementBadges,
     projectQuality,
     heatmap,
     recruiter,
@@ -163,6 +194,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     roadmap,
   };
 }
+
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));

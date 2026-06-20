@@ -6,6 +6,7 @@ const LABELS: Record<keyof Strength, string> = {
   projects: "Projects",
   education: "Education",
   experience: "Experience",
+  achievements: "Achievements",
   formatting: "Formatting",
 };
 
