@@ -166,7 +166,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
   const impactRewrites = buildImpactRewrites(parsed);
   const roadmap = buildRoadmap(parsed, projectQuality, jobMatches);
 
-  const achievements = [
+  const achievementBadges = [
     { id: "ats80", title: "ATS Score 80+", description: "Reached an ATS score above 80.", unlocked: atsScore >= 80 },
     { id: "ats90", title: "ATS Score 90+", description: "Elite ATS optimization.", unlocked: atsScore >= 90 },
     { id: "iv80", title: "Interview Ready", description: "Interview Readiness above 80.", unlocked: interviewScore >= 80 },
@@ -175,6 +175,9 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     { id: "advProj", title: "Advanced Builder", description: "Has at least one advanced project.", unlocked: projectQuality.some((p) => p.complexity === "Advanced") },
   ];
 
+  console.log("[ResumeIQ] Strength:", strength);
+  console.log("[ResumeIQ] ATS:", atsScore, "Interview:", interviewScore);
+
   return {
     parsed,
     atsScore,
@@ -182,7 +185,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     strength,
     missingSkills,
     suggestions,
-    achievements,
+    achievements: achievementBadges,
     projectQuality,
     heatmap,
     recruiter,
@@ -191,6 +194,7 @@ export function analyzeResume(parsed: ParsedResume): Analysis {
     roadmap,
   };
 }
+
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
