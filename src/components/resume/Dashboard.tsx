@@ -21,6 +21,7 @@ import { RecruiterView } from "./RecruiterView";
 import { JobMatchCenter } from "./JobMatchCenter";
 import { ImpactMeter } from "./ImpactMeter";
 import { ScoreHistory } from "./ScoreHistory";
+import { ParserDebugPanel } from "./ParserDebugPanel";
 import type { HistoryEntry } from "@/lib/resume/history";
 
 type Mode = "candidate" | "recruiter";
